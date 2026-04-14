@@ -54,3 +54,14 @@ jacoco.exec
 # Environment
 .env
 .env.local
+
+# AL
+.alcache/
+.alpackages/
+.snapshots/
+.output/
+*.app
+rad.json
+*.g.xlf
+*.flf
+TestResults.xml
