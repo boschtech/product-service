@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: product-service
+
+# Actuator endpoints for health monitoring (used by microfrontend orchestrators)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# Custom CORS config
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
+  order-service:
+    url: http://localhost:8081
