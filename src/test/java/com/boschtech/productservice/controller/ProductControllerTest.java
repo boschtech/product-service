@@ -1,6 +1,7 @@
 package com.boschtech.productservice.controller;
 
 import com.boschtech.productservice.client.OrderClient;
+import com.boschtech.productservice.model.OrderDto;
 import com.boschtech.productservice.model.Product;
 import com.boschtech.productservice.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -208,6 +209,65 @@ class ProductControllerTest {
         when(productService.deleteProduct("non-existent")).thenReturn(false);
 
         mockMvc.perform(delete("/api/products/non-existent"))
+                .andExpect(status().isNotFound());
+    }
+
+    // --- GET /api/products/{id}/orders ---
+
+    private OrderDto createOrderDto(String id, String status, int quantity, String total) {
+        OrderDto order = new OrderDto();
+        order.setId(id);
+        order.setProductId("test-id-123");
+        order.setProductName("Laptop");
+        order.setQuantity(quantity);
+        order.setTotalPrice(new BigDecimal(total));
+        order.setStatus(status);
+        order.setCreatedAt("2025-01-15T10:00:00Z");
+        return order;
+    }
+
+    @Test
+    void getProductOrders_shouldReturnOrdersEnvelopeWhenProductExists() throws Exception {
+        Product product = createTestProduct();
+        when(productService.getProductById("test-id-123")).thenReturn(Optional.of(product));
+        when(orderClient.getOrdersByProductId("test-id-123")).thenReturn(List.of(
+                createOrderDto("order-001", "CONFIRMED", 2, "1999.98"),
+                createOrderDto("order-002", "PENDING", 1, "999.99")
+        ));
+
+        mockMvc.perform(get("/api/products/test-id-123/orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productId").value("test-id-123"))
+                .andExpect(jsonPath("$.productName").value("Laptop"))
+                .andExpect(jsonPath("$.orderCount").value(2))
+                .andExpect(jsonPath("$.orders").isArray())
+                .andExpect(jsonPath("$.orders.length()").value(2))
+                .andExpect(jsonPath("$.orders[0].id").value("order-001"))
+                .andExpect(jsonPath("$.orders[0].status").value("CONFIRMED"))
+                .andExpect(jsonPath("$.orders[1].id").value("order-002"))
+                .andExpect(jsonPath("$.orders[1].status").value("PENDING"));
+    }
+
+    @Test
+    void getProductOrders_shouldReturnEmptyOrdersWhenProductHasNoOrders() throws Exception {
+        Product product = createTestProduct();
+        when(productService.getProductById("test-id-123")).thenReturn(Optional.of(product));
+        when(orderClient.getOrdersByProductId("test-id-123")).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/products/test-id-123/orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productId").value("test-id-123"))
+                .andExpect(jsonPath("$.productName").value("Laptop"))
+                .andExpect(jsonPath("$.orderCount").value(0))
+                .andExpect(jsonPath("$.orders").isArray())
+                .andExpect(jsonPath("$.orders.length()").value(0));
+    }
+
+    @Test
+    void getProductOrders_shouldReturn404WhenProductDoesNotExist() throws Exception {
+        when(productService.getProductById("non-existent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/products/non-existent/orders"))
                 .andExpect(status().isNotFound());
     }
 }
