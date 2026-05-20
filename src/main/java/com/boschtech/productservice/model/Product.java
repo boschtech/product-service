@@ -1,27 +1,43 @@
 package com.boschtech.productservice.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Entity
+@Table(name = "products")
 public class Product {
 
+    @Id
     private String id;
 
     @NotBlank(message = "Product name is required")
+    @Size(max = 255, message = "Product name must not exceed 255 characters")
+    @Column(nullable = false)
     private String name;
 
+    @Size(max = 2000, message = "Description must not exceed 2000 characters")
+    @Column(length = 2000)
     private String description;
 
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
+    @Column(nullable = false)
     private BigDecimal price;
 
     @NotBlank(message = "Category is required")
+    @Size(max = 100, message = "Category must not exceed 100 characters")
+    @Column(nullable = false, length = 100)
     private String category;
 
+    @Column(name = "in_stock", nullable = false)
     private boolean inStock;
 
     public Product() {

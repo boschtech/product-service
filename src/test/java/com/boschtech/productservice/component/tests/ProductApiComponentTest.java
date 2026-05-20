@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProductApiComponentTest {
 
+    private static final String API_KEY = "test-api-key-for-tests";
+
     @Autowired
     private WebTestClient webTestClient;
 
@@ -54,6 +56,7 @@ class ProductApiComponentTest {
 
         webTestClient.post()
                 .uri("/api/products")
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(newProduct)
                 .exchange()
@@ -99,6 +102,7 @@ class ProductApiComponentTest {
 
         webTestClient.post()
                 .uri("/api/products")
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(json)
                 .exchange()
@@ -119,6 +123,7 @@ class ProductApiComponentTest {
 
         webTestClient.post()
                 .uri("/api/products")
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(json)
                 .exchange()
@@ -139,6 +144,7 @@ class ProductApiComponentTest {
 
         webTestClient.post()
                 .uri("/api/products")
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(json)
                 .exchange()
@@ -185,6 +191,7 @@ class ProductApiComponentTest {
 
         webTestClient.put()
                 .uri("/api/products/{id}", createdProductId)
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updated)
                 .exchange()
@@ -205,6 +212,7 @@ class ProductApiComponentTest {
 
         webTestClient.put()
                 .uri("/api/products/{id}", "non-existent-id")
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(product)
                 .exchange()
@@ -224,6 +232,7 @@ class ProductApiComponentTest {
 
         webTestClient.put()
                 .uri("/api/products/{id}", createdProductId)
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(json)
                 .exchange()
@@ -239,6 +248,7 @@ class ProductApiComponentTest {
 
         webTestClient.delete()
                 .uri("/api/products/{id}", createdProductId)
+                .header("X-API-Key", API_KEY)
                 .exchange()
                 .expectStatus().isNoContent();
     }
@@ -248,6 +258,7 @@ class ProductApiComponentTest {
     void shouldReturn404WhenDeletingAlreadyDeletedProduct() {
         webTestClient.delete()
                 .uri("/api/products/{id}", createdProductId)
+                .header("X-API-Key", API_KEY)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -296,6 +307,7 @@ class ProductApiComponentTest {
         // CREATE
         Product created = webTestClient.post()
                 .uri("/api/products")
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(new Product("Headphones", "Noise cancelling", new BigDecimal("249.99"), "Audio"))
                 .exchange()
@@ -318,6 +330,7 @@ class ProductApiComponentTest {
         // UPDATE
         webTestClient.put()
                 .uri("/api/products/{id}", id)
+                .header("X-API-Key", API_KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(new Product("Headphones Pro", "Active noise cancelling", new BigDecimal("349.99"), "Audio"))
                 .exchange()
@@ -328,6 +341,7 @@ class ProductApiComponentTest {
         // DELETE
         webTestClient.delete()
                 .uri("/api/products/{id}", id)
+                .header("X-API-Key", API_KEY)
                 .exchange()
                 .expectStatus().isNoContent();
 
