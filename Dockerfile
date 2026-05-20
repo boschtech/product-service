@@ -9,7 +9,12 @@ RUN mvn package -DskipTests -B
 # ── Stage 2: Runtime ────────────────────────────────────────
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+
+# Run as non-root user
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 COPY --from=build /app/target/*.jar app.jar
+RUN chown appuser:appgroup app.jar
+USER appuser
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -3,12 +3,14 @@ package com.boschtech.productservice.controller;
 import com.boschtech.productservice.client.OrderClient;
 import com.boschtech.productservice.model.OrderDto;
 import com.boschtech.productservice.model.Product;
+import com.boschtech.productservice.security.SecurityConfig;
 import com.boschtech.productservice.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,7 +25,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
+@Import(SecurityConfig.class)
 class ProductControllerTest {
+
+    private static final String API_KEY = "test-api-key-for-tests";
 
     @Autowired
     private MockMvc mockMvc;
@@ -97,10 +102,34 @@ class ProductControllerTest {
         String json = objectMapper.writeValueAsString(product);
 
         mockMvc.perform(post("/api/products")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Laptop"));
+    }
+
+    @Test
+    void createProduct_shouldReturn401WhenNoApiKey() throws Exception {
+        Product product = createTestProduct();
+        String json = objectMapper.writeValueAsString(product);
+
+        mockMvc.perform(post("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createProduct_shouldReturn401WhenInvalidApiKey() throws Exception {
+        Product product = createTestProduct();
+        String json = objectMapper.writeValueAsString(product);
+
+        mockMvc.perform(post("/api/products")
+                        .header("X-API-Key", "wrong-key")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -111,6 +140,7 @@ class ProductControllerTest {
         product.setCategory("Cat");
 
         mockMvc.perform(post("/api/products")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isBadRequest());
@@ -124,6 +154,7 @@ class ProductControllerTest {
         product.setPrice(null);
 
         mockMvc.perform(post("/api/products")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isBadRequest());
@@ -137,6 +168,7 @@ class ProductControllerTest {
         product.setPrice(new BigDecimal("-5.00"));
 
         mockMvc.perform(post("/api/products")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isBadRequest());
@@ -150,6 +182,7 @@ class ProductControllerTest {
         product.setCategory("");
 
         mockMvc.perform(post("/api/products")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isBadRequest());
@@ -164,10 +197,21 @@ class ProductControllerTest {
         when(productService.updateProduct(eq("test-id-123"), any(Product.class))).thenReturn(Optional.of(product));
 
         mockMvc.perform(put("/api/products/test-id-123")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Laptop"));
+    }
+
+    @Test
+    void updateProduct_shouldReturn401WhenNoApiKey() throws Exception {
+        Product product = createTestProduct();
+
+        mockMvc.perform(put("/api/products/test-id-123")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(product)))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -176,6 +220,7 @@ class ProductControllerTest {
         when(productService.updateProduct(eq("non-existent"), any(Product.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(put("/api/products/non-existent")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isNotFound());
@@ -189,6 +234,7 @@ class ProductControllerTest {
         product.setCategory("");
 
         mockMvc.perform(put("/api/products/test-id-123")
+                        .header("X-API-Key", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isBadRequest());
@@ -200,15 +246,23 @@ class ProductControllerTest {
     void deleteProduct_shouldReturn204WhenDeleted() throws Exception {
         when(productService.deleteProduct("test-id-123")).thenReturn(true);
 
-        mockMvc.perform(delete("/api/products/test-id-123"))
+        mockMvc.perform(delete("/api/products/test-id-123")
+                        .header("X-API-Key", API_KEY))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteProduct_shouldReturn401WhenNoApiKey() throws Exception {
+        mockMvc.perform(delete("/api/products/test-id-123"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void deleteProduct_shouldReturn404WhenNotExists() throws Exception {
         when(productService.deleteProduct("non-existent")).thenReturn(false);
 
-        mockMvc.perform(delete("/api/products/non-existent"))
+        mockMvc.perform(delete("/api/products/non-existent")
+                        .header("X-API-Key", API_KEY))
                 .andExpect(status().isNotFound());
     }
 
