@@ -36,6 +36,9 @@ public class ProductService {
     }
 
     public Product createProduct(Product product) {
+        if (product.getId() != null && product.getId().isBlank()) {
+            product.setId(null);
+        }
         return productRepository.save(product);
     }
 

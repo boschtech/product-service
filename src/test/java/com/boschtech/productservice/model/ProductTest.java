@@ -9,18 +9,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProductTest {
 
     @Test
-    void defaultConstructor_shouldGenerateIdAndSetInStock() {
+    void defaultConstructor_shouldSetInStockAndNullId() {
         Product product = new Product();
-        assertNotNull(product.getId());
-        assertFalse(product.getId().isEmpty());
+        assertNull(product.getId());
         assertTrue(product.isInStock());
     }
 
     @Test
-    void parameterizedConstructor_shouldSetAllFields() {
+    void parameterizedConstructor_shouldSetAllFieldsExceptId() {
         Product product = new Product("Keyboard", "Mechanical", new BigDecimal("79.99"), "Electronics");
 
-        assertNotNull(product.getId());
+        assertNull(product.getId());
         assertEquals("Keyboard", product.getName());
         assertEquals("Mechanical", product.getDescription());
         assertEquals(new BigDecimal("79.99"), product.getPrice());
@@ -48,9 +47,10 @@ class ProductTest {
     }
 
     @Test
-    void twoProducts_shouldHaveDifferentIds() {
+    void idIsNullBeforePersistence() {
         Product p1 = new Product();
         Product p2 = new Product();
-        assertNotEquals(p1.getId(), p2.getId());
+        assertNull(p1.getId());
+        assertNull(p2.getId());
     }
 }

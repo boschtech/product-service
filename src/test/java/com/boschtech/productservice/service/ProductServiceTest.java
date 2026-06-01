@@ -59,11 +59,10 @@ class ProductServiceTest {
     @Test
     void createProduct_shouldSaveAndReturnProduct() {
         Product product = new Product("Test", "Desc", new BigDecimal("10.00"), "Cat");
-        when(productRepository.save(product)).thenReturn(product);
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Product created = productService.createProduct(product);
 
-        assertNotNull(created.getId());
         assertEquals("Test", created.getName());
         verify(productRepository).save(product);
     }
@@ -71,9 +70,10 @@ class ProductServiceTest {
     @Test
     void getProductById_shouldReturnProductWhenExists() {
         Product product = new Product("Test", "Desc", new BigDecimal("10.00"), "Cat");
-        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        product.setId("test-id");
+        when(productRepository.findById("test-id")).thenReturn(Optional.of(product));
 
-        Optional<Product> found = productService.getProductById(product.getId());
+        Optional<Product> found = productService.getProductById("test-id");
 
         assertTrue(found.isPresent());
         assertEquals("Test", found.get().getName());
