@@ -127,6 +127,29 @@ class ProductServiceTest {
     }
 
     @Test
+    void createProduct_shouldNullifyBlankId() {
+        Product product = new Product("Test", "Desc", new BigDecimal("10.00"), "Cat");
+        product.setId("   ");
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Product created = productService.createProduct(product);
+
+        assertNull(created.getId());
+        verify(productRepository).save(product);
+    }
+
+    @Test
+    void createProduct_shouldPreserveNonBlankId() {
+        Product product = new Product("Test", "Desc", new BigDecimal("10.00"), "Cat");
+        product.setId("explicit-id");
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Product created = productService.createProduct(product);
+
+        assertEquals("explicit-id", created.getId());
+    }
+
+    @Test
     void getAllProducts_shouldReturnAllProducts() {
         List<Product> products = List.of(
                 new Product("A", "Desc A", new BigDecimal("1.00"), "Cat"),

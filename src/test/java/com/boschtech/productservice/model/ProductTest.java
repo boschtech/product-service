@@ -53,4 +53,34 @@ class ProductTest {
         assertNull(p1.getId());
         assertNull(p2.getId());
     }
+
+    @Test
+    void ensureId_shouldGenerateUuidWhenIdIsNull() {
+        Product product = new Product();
+        assertNull(product.getId());
+
+        product.ensureId();
+
+        assertNotNull(product.getId());
+        assertFalse(product.getId().isEmpty());
+    }
+
+    @Test
+    void ensureId_shouldPreserveExistingId() {
+        Product product = new Product();
+        product.setId("custom-id");
+
+        product.ensureId();
+
+        assertEquals("custom-id", product.getId());
+    }
+
+    @Test
+    void ensureId_shouldGenerateUniqueIds() {
+        Product p1 = new Product();
+        Product p2 = new Product();
+        p1.ensureId();
+        p2.ensureId();
+        assertNotEquals(p1.getId(), p2.getId());
+    }
 }
