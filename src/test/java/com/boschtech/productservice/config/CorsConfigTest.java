@@ -1,7 +1,7 @@
 package com.boschtech.productservice.config;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.lang.reflect.Field;
 
@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class CorsConfigTest {
 
     @Test
-    void corsFilter_shouldCreateFilterWithConfiguredOrigins() throws Exception {
+    void corsConfigurationSource_shouldCreateSourceWithConfiguredOrigins() throws Exception {
         CorsConfig config = new CorsConfig();
 
         // Inject the @Value-bound field via reflection (no Spring context needed)
@@ -18,8 +18,8 @@ class CorsConfigTest {
         originsField.setAccessible(true);
         originsField.set(config, "http://localhost:3000,http://localhost:4200");
 
-        CorsFilter filter = config.corsFilter();
+        CorsConfigurationSource source = config.corsConfigurationSource();
 
-        assertNotNull(filter);
+        assertNotNull(source);
     }
 }
