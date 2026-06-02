@@ -3,8 +3,9 @@ package com.boschtech.productservice.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.UuidGenerator;
+import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,7 +17,6 @@ import java.math.BigDecimal;
 public class Product {
 
     @Id
-    @UuidGenerator
     private String id;
 
     @NotBlank(message = "Product name is required")
@@ -43,6 +43,13 @@ public class Product {
 
     public Product() {
         this.inStock = true;
+    }
+
+    @PrePersist
+    void ensureId() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString();
+        }
     }
 
     public Product(String name, String description, BigDecimal price, String category) {
