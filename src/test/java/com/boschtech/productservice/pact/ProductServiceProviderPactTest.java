@@ -3,6 +3,7 @@ package com.boschtech.productservice.pact;
 import au.com.dius.pact.provider.junit5.HttpTestTarget;
 import au.com.dius.pact.provider.junit5.PactVerificationContext;
 import au.com.dius.pact.provider.junit5.PactVerificationInvocationContextProvider;
+import au.com.dius.pact.provider.junitsupport.IgnoreNoPactsToVerify;
 import au.com.dius.pact.provider.junitsupport.Provider;
 import au.com.dius.pact.provider.junitsupport.State;
 import au.com.dius.pact.provider.junitsupport.loader.PactFolder;
@@ -21,10 +22,17 @@ import java.math.BigDecimal;
  * Provider verification test: product-service verifies it satisfies
  * the contract defined by order-service (the consumer).
  * Loads pact from order-service's target/pacts directory.
+ *
+ * The pact is a build artifact produced by order-service's consumer test, so it
+ * is only present once order-service has been built (e.g. in the CI pipeline).
+ * {@link IgnoreNoPactsToVerify} lets this suite pass when product-service is
+ * built on its own and that directory is empty/absent, while still verifying
+ * the contract whenever the pact is available.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Provider("product_service")
 @PactFolder("../order-service/target/pacts")
+@IgnoreNoPactsToVerify
 class ProductServiceProviderPactTest {
 
     @LocalServerPort
@@ -35,13 +43,19 @@ class ProductServiceProviderPactTest {
 
     @BeforeEach
     void setUp(PactVerificationContext context) {
-        context.setTarget(new HttpTestTarget("localhost", port));
+        // context is null when @IgnoreNoPactsToVerify yields no interactions
+        // (e.g. order-service has not been built), so skip target setup.
+        if (context != null) {
+            context.setTarget(new HttpTestTarget("localhost", port));
+        }
     }
 
     @TestTemplate
     @ExtendWith(PactVerificationInvocationContextProvider.class)
     void verifyPact(PactVerificationContext context) {
-        context.verifyInteraction();
+        if (context != null) {
+            context.verifyInteraction();
+        }
     }
 
     @State("a product with ID product-001 exists")
