@@ -81,7 +81,8 @@ class ProductControllerTest {
         mockMvc.perform(get("/api/products/test-id-123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Laptop"))
-                .andExpect(jsonPath("$.id").value("test-id-123"));
+                .andExpect(jsonPath("$.id").value("test-id-123"))
+                .andExpect(jsonPath("$.inStock").value(true));
     }
 
     @Test
@@ -106,7 +107,24 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("Laptop"));
+                .andExpect(jsonPath("$.name").value("Laptop"))
+                .andExpect(jsonPath("$.inStock").value(true));
+    }
+
+    @Test
+    void createProduct_shouldPersistOutOfStockStatus() throws Exception {
+        Product product = createTestProduct();
+        product.setInStock(false);
+        when(productService.createProduct(any(Product.class))).thenReturn(product);
+
+        String json = objectMapper.writeValueAsString(product);
+
+        mockMvc.perform(post("/api/products")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.inStock").value(false));
     }
 
     @Test
