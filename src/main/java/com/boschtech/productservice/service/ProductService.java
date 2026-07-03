@@ -27,8 +27,11 @@ public class ProductService {
         }
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<Product> getAllProducts(String search) {
+        if (search == null || search.isBlank()) {
+            return productRepository.findAll();
+        }
+        return productRepository.search(search.trim());
     }
 
     public Optional<Product> getProductById(String id) {

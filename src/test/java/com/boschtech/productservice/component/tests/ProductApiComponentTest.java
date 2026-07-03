@@ -274,6 +274,58 @@ class ProductApiComponentTest {
                 .hasSize(3);
     }
 
+    // ─── GET /api/products?search= ──────────────────────────────────
+
+    @Test
+    @Order(18)
+    void shouldFilterProductsBySearchTerm() {
+        // "Wireless Keyboard" is part of the seeded data and is never deleted.
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/api/products")
+                        .queryParam("search", "keyboard")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Product.class)
+                .value(products -> {
+                    assertFalse(products.isEmpty(), "Expected at least one match for 'keyboard'");
+                    assertTrue(products.stream().allMatch(p ->
+                            p.getName().toLowerCase().contains("keyboard")
+                                    || (p.getDescription() != null
+                                        && p.getDescription().toLowerCase().contains("keyboard"))
+                                    || p.getCategory().toLowerCase().contains("keyboard")));
+                });
+    }
+
+    @Test
+    @Order(19)
+    void shouldReturnEmptyListWhenSearchMatchesNothing() {
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/api/products")
+                        .queryParam("search", "no-such-product-xyz")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Product.class)
+                .hasSize(0);
+    }
+
+    @Test
+    @Order(20)
+    void shouldReturnAllProductsWhenSearchIsBlank() {
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/api/products")
+                        .queryParam("search", "   ")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Product.class)
+                .hasSize(3);
+    }
+
     // ─── Actuator health (used by microfrontend orchestrators) ──────
 
     @Test

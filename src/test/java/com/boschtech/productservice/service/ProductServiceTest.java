@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +53,7 @@ class ProductServiceTest {
     void getAllProducts_shouldReturnEmptyListWhenNoProducts() {
         when(productRepository.findAll()).thenReturn(List.of());
 
-        List<Product> products = productService.getAllProducts();
+        List<Product> products = productService.getAllProducts(null);
         assertTrue(products.isEmpty());
     }
 
@@ -135,6 +136,40 @@ class ProductServiceTest {
         );
         when(productRepository.findAll()).thenReturn(products);
 
-        assertEquals(3, productService.getAllProducts().size());
+        assertEquals(3, productService.getAllProducts(null).size());
+    }
+
+    @Test
+    void getAllProducts_shouldReturnAllWhenSearchIsBlank() {
+        List<Product> products = List.of(
+                new Product("A", "Desc A", new BigDecimal("1.00"), "Cat")
+        );
+        when(productRepository.findAll()).thenReturn(products);
+
+        assertEquals(1, productService.getAllProducts("   ").size());
+        verify(productRepository).findAll();
+        verify(productRepository, never()).search(anyString());
+    }
+
+    @Test
+    void getAllProducts_shouldFilterBySearchTerm() {
+        Product match = new Product("Wireless Keyboard", "Bluetooth", new BigDecimal("79.99"), "Electronics");
+        when(productRepository.search("keyboard")).thenReturn(List.of(match));
+
+        List<Product> result = productService.getAllProducts("keyboard");
+
+        assertEquals(1, result.size());
+        assertEquals("Wireless Keyboard", result.get(0).getName());
+        verify(productRepository).search("keyboard");
+        verify(productRepository, never()).findAll();
+    }
+
+    @Test
+    void getAllProducts_shouldTrimSearchTermBeforeQuerying() {
+        when(productRepository.search("shoes")).thenReturn(List.of());
+
+        productService.getAllProducts("  shoes  ");
+
+        verify(productRepository).search("shoes");
     }
 }

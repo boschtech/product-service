@@ -53,7 +53,7 @@ class ProductControllerTest {
     @Test
     void getAllProducts_shouldReturnListOfProducts() throws Exception {
         Product product = createTestProduct();
-        when(productService.getAllProducts()).thenReturn(List.of(product));
+        when(productService.getAllProducts(null)).thenReturn(List.of(product));
 
         mockMvc.perform(get("/api/products"))
                 .andExpect(status().isOk())
@@ -64,11 +64,21 @@ class ProductControllerTest {
 
     @Test
     void getAllProducts_shouldReturnEmptyList() throws Exception {
-        when(productService.getAllProducts()).thenReturn(List.of());
+        when(productService.getAllProducts(null)).thenReturn(List.of());
 
         mockMvc.perform(get("/api/products"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void getAllProducts_shouldPassSearchTermToService() throws Exception {
+        Product product = createTestProduct();
+        when(productService.getAllProducts("Laptop")).thenReturn(List.of(product));
+
+        mockMvc.perform(get("/api/products").param("search", "Laptop"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Laptop"));
     }
 
     // --- GET /api/products/{id} ---
