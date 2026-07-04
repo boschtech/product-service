@@ -25,8 +25,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<List<Product>> getAllProducts(
+            @RequestParam(name = "search", required = false) String search) {
+        return ResponseEntity.ok(productService.getAllProducts(search));
     }
 
     @GetMapping("/{id}")

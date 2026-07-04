@@ -54,7 +54,7 @@ The service starts on **http://localhost:8080**.
 
 | Method | Endpoint             | Description         |
 |--------|----------------------|---------------------|
-| GET    | /api/products        | List all products   |
+| GET    | /api/products        | List all products; optional `?search=` term filters by name, description or category (case-insensitive) |
 | GET    | /api/products/{id}   | Get product by ID   |
 | POST   | /api/products        | Create a product    |
 | PUT    | /api/products/{id}   | Update a product    |
@@ -75,6 +75,19 @@ The service allows cross-origin requests from these origins by default (configur
 
 ```javascript
 const response = await fetch('http://localhost:8080/api/products');
+const products = await response.json();
+```
+
+### Searching / Filtering Products
+
+Pass an optional `search` query parameter to `GET /api/products` to limit the
+results to products whose **name**, **description** or **category** contains the
+term (case-insensitive). Omitting or leaving the parameter blank returns all
+products.
+
+```javascript
+// Only products matching "keyboard"
+const response = await fetch('http://localhost:8080/api/products?search=keyboard');
 const products = await response.json();
 ```
 
