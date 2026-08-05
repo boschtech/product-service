@@ -34,3 +34,5 @@ app:
     url: ${ORDER_SERVICE_URL:http://localhost:8081}
   security:
     api-key: ${API_KEY:changeme-dev-only}
+    rate-limit:
+      requests-per-minute: ${RATE_LIMIT_RPM:100}
